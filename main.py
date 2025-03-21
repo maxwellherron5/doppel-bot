@@ -1,4 +1,5 @@
-from doppel_bot.bot import run_bot
+from doppel_bot.bot import DoppelBot
 
 if __name__ == "__main__":
-    run_bot()
+    bot = DoppelBot()
+    bot.run()
