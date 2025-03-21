@@ -47,11 +47,13 @@ class DoppelBot:
         self.register_events()
         self.register_commands()
 
-    def setup_collection(self):
+    @staticmethod
+    def setup_collection():
         chroma_client = chromadb.PersistentClient(path="./chroma_db")
         return chroma_client.get_or_create_collection(name="messages")
 
-    def setup_llm(self, kwargs):
+    @staticmethod
+    def setup_llm(kwargs):
         """
         Create the ChatOpenAI LLM with either default settings or user-provided kwargs.
         """
@@ -69,7 +71,8 @@ class DoppelBot:
             presence_penalty=0.2,
         )
 
-    def setup_vectorstore(self, kwargs):
+    @staticmethod
+    def setup_vectorstore(kwargs):
         """
         Create the embeddings and pass them into a Chroma vectorstore.
         """
