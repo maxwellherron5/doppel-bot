@@ -68,22 +68,26 @@ def create_bot():
     @bot.command()
     async def mimic(ctx, user: discord.Member, *, prompt: str):
         """Mimic a user based on their past messages."""
-        results = collection.query(query_texts=[prompt], n_results=10, where={"author": str(user)})
-        
+        results = collection.query(
+            query_texts=[prompt], n_results=10, where={"author": str(user)}
+        )
+
         if not results["documents"] or not results["documents"][0]:
-            await ctx.send(f"I don't have enough messages from {user.mention} to mimic them!")
+            await ctx.send(
+                f"I don't have enough messages from {user.mention} to mimic them!"
+            )
             return
 
         user_messages = results["documents"][0]
-        
+
         personality_context = " ".join(user_messages[:5])
         personality_prompt = f"Based on these messages, describe the personality and tone of {user.display_name}: {personality_context}"
-        
+
         try:
             personality_summary = llm(personality_prompt)
         except Exception as e:
             personality_summary = ""
-        
+
         chain_input = {
             "query": (
                 f"Based on the following messages and personality traits, respond as if you are {user.display_name}.\n"
@@ -92,22 +96,25 @@ def create_bot():
                 f"User prompt: {prompt}"
             )
         }
-        
+
         try:
             print(f"Sending request to OpenAI for user {user.name}...")
             chain_output = rag_chain.invoke(chain_input)
         except Exception as e:
             await ctx.send(f"Error: {type(e).__name__} - {e}")
             return
-        
-        response = chain_output.get("result") if isinstance(chain_output, dict) else str(chain_output)
-        
+
+        response = (
+            chain_output.get("result")
+            if isinstance(chain_output, dict)
+            else str(chain_output)
+        )
+
         if not response:
             await ctx.send("Sorry, I couldn't generate a response.")
             return
 
         await ctx.send(f"**{user.name} says:** {response}")
-
 
     @bot.command()
     async def scrape_history(ctx, limit: int = 1000):
