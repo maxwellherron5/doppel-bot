@@ -79,7 +79,7 @@ def create_bot():
 
         if not user_messages:
             await ctx.send(
-                f"I don't have enough messages from {user.mention} to mimic them!"
+                f"I don't have enough messages from {user.display_name} to mimic them!"
             )
             return
 
@@ -120,7 +120,8 @@ def create_bot():
     @bot.command()
     async def scrape_history(ctx, limit: int = 1000):
         """Scrape message history from all text channels and store them in ChromaDB."""
-        await ctx.send("Starting message history scrape...")
+        # await ctx.send("Starting message history scrape...")
+        print("Starting message history scrape...")
 
         async def scrape_channel(channel):
             count = 0
@@ -153,16 +154,19 @@ def create_bot():
 
         total_count = 0
         for channel in ctx.guild.text_channels:
-            await ctx.send(f"Scraping messages from #{channel.name}...")
+            print(f"Scraping messages from #{channel.name}...")
+            # await ctx.send(f"Scraping messages from #{channel.name}...")
             count = await scrape_channel(channel)
             total_count += count
             print(f"Scraped {count} messages from {channel.name}")
-            await ctx.send(
-                f"Completed scraping #{channel.name}: {count} messages collected"
-            )
+            print(f"Completed scraping #{channel.name}: {count} messages collected")
+            # await ctx.send(
+            #     f"Completed scraping #{channel.name}: {count} messages collected"
+            # )
             await asyncio.sleep(2)  # Wait between channels
 
-        await ctx.send(f"Done! Collected {total_count} messages across all channels.")
+        print(f"Done! Collected {total_count} messages across all channels.")
+        # await ctx.send(f"Done! Collected {total_count} messages across all channels.")
 
     return bot, TOKEN
 
