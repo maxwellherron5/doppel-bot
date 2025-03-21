@@ -1,11 +1,12 @@
 import os
-import discord
-import chromadb
 import asyncio
-from discord.ext import commands
-from dotenv import load_dotenv
 
 from doppel_bot.logger import get_logger
+
+import discord
+import chromadb
+from discord.ext import commands
+from dotenv import load_dotenv
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.vectorstores import Chroma
 from langchain.chains import RetrievalQA
