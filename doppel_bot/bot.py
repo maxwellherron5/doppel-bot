@@ -68,7 +68,6 @@ def create_bot():
     @bot.command()
     async def mimic(ctx, user: discord.Member, *, prompt: str):
         """Mimic a user based on their past messages."""
-        # Use metadata filtering if available:
         results = collection.query(query_texts=[prompt], n_results=10, where={"author": str(user)})
         
         if not results["documents"] or not results["documents"][0]:
@@ -77,7 +76,6 @@ def create_bot():
 
         user_messages = results["documents"][0]
         
-        # Optional: Summarize personality based on the user's messages.
         personality_context = " ".join(user_messages[:5])
         personality_prompt = f"Based on these messages, describe the personality and tone of {user.display_name}: {personality_context}"
         
@@ -86,7 +84,6 @@ def create_bot():
         except Exception as e:
             personality_summary = ""
         
-        # Now, create a more detailed prompt including personality summary
         chain_input = {
             "query": (
                 f"Based on the following messages and personality traits, respond as if you are {user.display_name}.\n"
@@ -111,57 +108,6 @@ def create_bot():
 
         await ctx.send(f"**{user.name} says:** {response}")
 
-    # @bot.command()
-    # async def mimic(ctx, user: discord.Member, *, prompt: str):
-    #     """Mimic a user based on their past messages."""
-    #     results = collection.query(query_texts=[prompt], n_results=5)
-    #     user_messages = []
-    #     if results["documents"]:
-    #         user_messages = [
-    #             doc
-    #             for doc, meta in zip(results["documents"][0], results["metadatas"][0])
-    #             if meta["author"] == str(user)
-    #         ]
-
-    #     if not user_messages:
-    #         await ctx.send(
-    #             f"I don't have enough messages from {user.display_name} to mimic them!"
-    #         )
-    #         return
-
-    #     context = " ".join(user_messages[:3])
-    #     chain_input = {
-    #         "query": f"Respond in the style of {user.display_name}.\nContext: {context}\nUser prompt: {prompt}"
-    #     }
-
-    #     try:
-    #         print(f"Sending request to OpenAI for user {user.name}...")
-    #         print(f"Context: {context[:100]}...")
-
-    #         chain_output = rag_chain.invoke(chain_input)
-
-    #         print("Response received from OpenAI")
-    #     except OpenAIError as e:
-    #         print(f"OpenAI Error: {type(e).__name__}: {e}")
-    #         await ctx.send(
-    #             f"Sorry, I encountered an error with OpenAI: {type(e).__name__}"
-    #         )
-    #         return
-    #     except Exception as e:
-    #         print(f"Unexpected error: {type(e).__name__}: {e}")
-    #         await ctx.send(f"An unexpected error occurred: {type(e).__name__}")
-    #         return
-
-    #     if isinstance(chain_output, dict):
-    #         response = chain_output.get("result", None)
-    #     else:
-    #         response = str(chain_output)
-
-    #     if not response:
-    #         await ctx.send("Sorry, I couldn't generate a response.")
-    #         return
-
-    #     await ctx.send(f"**{user.name} says:** {response}")
 
     @bot.command()
     async def scrape_history(ctx, limit: int = 1000):
