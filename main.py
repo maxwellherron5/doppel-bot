@@ -1,6 +1,4 @@
-def main():
-    print("Hello from doppel-bot!")
-
+from doppel_bot.bot import run_bot
 
 if __name__ == "__main__":
-    main()
+    run_bot()
