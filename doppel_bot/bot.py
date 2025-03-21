@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from openai import OpenAIError
 import asyncio
 
+from logger import get_logger, log_duration
+
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.vectorstores import Chroma
 from langchain.chains import RetrievalQA
@@ -47,9 +49,11 @@ def create_bot():
         llm=llm, chain_type="stuff", retriever=retriever
     )
 
+    logger = get_logger()
+
     @bot.event
     async def on_ready():
-        print(f"Logged in as {bot.user}")
+        logger.info(f"Logged in as {bot.user}")
 
     @bot.event
     async def on_message(message):
@@ -98,7 +102,7 @@ def create_bot():
         }
 
         try:
-            print(f"Sending request to OpenAI for user {user.name}...")
+            logger.info(f"Sending request to OpenAI for user {user.name}...")
             chain_output = rag_chain.invoke(chain_input)
         except Exception as e:
             await ctx.send(f"Error: {type(e).__name__} - {e}")
@@ -117,10 +121,11 @@ def create_bot():
         await ctx.send(f"**{user.name} says:** {response}")
 
     @bot.command()
+    @log_duration
     async def scrape_history(ctx, limit: int = 1000):
         """Scrape message history from all text channels and store them in ChromaDB."""
         # await ctx.send("Starting message history scrape...")
-        print("Starting message history scrape...")
+        logger.info("Starting message history scrape...")
 
         async def scrape_channel(channel):
             count = 0
@@ -139,32 +144,34 @@ def create_bot():
                     if count % 50 == 0:
                         await asyncio.sleep(0.5)
             except discord.HTTPException as e:
-                print(f"Error scraping {channel.name}: {e}")
+                logger.info(f"Error scraping {channel.name}: {e}")
                 if e.status == 429:
                     retry_after = e.retry_after or 5
-                    print(
+                    logger.info(
                         f"Rate limit exceeded. Retrying after {retry_after} seconds..."
                     )
                     await asyncio.sleep(retry_after)
                     return await scrape_channel(channel)
             except Exception as e:
-                print(f"Unexpected error scraping {channel.name}: {e}")
+                logger.info(f"Unexpected error scraping {channel.name}: {e}")
             return count
 
         total_count = 0
         for channel in ctx.guild.text_channels:
-            print(f"Scraping messages from #{channel.name}...")
+            logger.info(f"Scraping messages from #{channel.name}...")
             # await ctx.send(f"Scraping messages from #{channel.name}...")
             count = await scrape_channel(channel)
             total_count += count
-            print(f"Scraped {count} messages from {channel.name}")
-            print(f"Completed scraping #{channel.name}: {count} messages collected")
+            logger.info(f"Scraped {count} messages from {channel.name}")
+            logger.info(
+                f"Completed scraping #{channel.name}: {count} messages collected"
+            )
             # await ctx.send(
             #     f"Completed scraping #{channel.name}: {count} messages collected"
             # )
             await asyncio.sleep(2)  # Wait between channels
 
-        print(f"Done! Collected {total_count} messages across all channels.")
+        logger.info(f"Done! Collected {total_count} messages across all channels.")
         # await ctx.send(f"Done! Collected {total_count} messages across all channels.")
 
     return bot, TOKEN
