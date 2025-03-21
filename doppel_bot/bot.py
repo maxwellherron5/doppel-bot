@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from openai import OpenAIError
 import asyncio
 
-from logger import get_logger, log_duration
+from doppel_bot.logger import get_logger
 
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.vectorstores import Chroma
@@ -121,7 +121,6 @@ def create_bot():
         await ctx.send(f"**{user.name} says:** {response}")
 
     @bot.command()
-    @log_duration
     async def scrape_history(ctx, limit: int = 1000):
         """Scrape message history from all text channels and store them in ChromaDB."""
         # await ctx.send("Starting message history scrape...")
