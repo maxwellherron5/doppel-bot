@@ -12,4 +12,4 @@ wheels/
 # Other
 .env
 .ruff_cache/
-doppel_bot/chroma_db/
+chroma_db/
