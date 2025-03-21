@@ -84,19 +84,24 @@ def create_bot():
 
         user_messages = results["documents"][0]
 
-        personality_context = " ".join(user_messages[:5])
-        personality_prompt = f"Based on these messages, describe the personality and tone of {user.display_name}: {personality_context}"
+        extended_context = " ".join(user_messages[:20])
+        personality_prompt = (
+            f"Analyze the following messages from {user.display_name} and extract detailed adjectives, tone, mood, "
+            "and recurring language patterns that best characterize their style. Provide a concise, bullet-point summary of these traits.\n"
+            f"Messages: {extended_context}"
+        )
 
         try:
-            personality_summary = llm(personality_prompt)
+            personality_summary = llm.invoke(personality_prompt)
         except Exception as e:
             personality_summary = ""
 
         chain_input = {
             "query": (
-                f"Based on the following messages and personality traits, respond as if you are {user.display_name}.\n"
-                f"Personality summary: {personality_summary}\n"
-                f"Messages: {' '.join(user_messages[:3])}\n"
+                f"You are impersonating {user.display_name}. Based on the following detailed personality summary and example messages, "
+                "respond in a way that matches their unique style, tone, and mood. Make sure to incorporate specific phrases and mannerisms that are characteristic of them.\n\n"
+                f"Personality summary: {personality_summary}\n\n"
+                f"Example messages: {' '.join(user_messages[:10])}\n\n"
                 f"User prompt: {prompt}"
             )
         }
@@ -140,7 +145,7 @@ def create_bot():
                     )
                     count += 1
 
-                    if count % 50 == 0:
+                    if count % 100 == 0:
                         await asyncio.sleep(0.5)
             except discord.HTTPException as e:
                 logger.info(f"Error scraping {channel.name}: {e}")
